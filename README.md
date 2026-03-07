@@ -355,3 +355,61 @@ python3 /tmp/word_frequency.py \
 Results confirmed correct — Hadoop cluster output is identical to local test output.
 
 ---
+
+## Step 10: Key Findings from Hadoop Output
+
+**Finding 1 — Politics dominates the news cycle**
+The top 10 words are almost entirely political: "trump" (532), "biden" (268), "gop" (152), "house" (122), "donald" (114), "joe" (110), "election" (85). "trump" alone appears in over 10% of all 5000 headlines. This reflects HuffPost's strong political focus and the intensity of US political coverage in 2022.
+
+**Finding 2 — COVID and the pandemic remain a top-3 theme**
+"covid" (290) and "coronavirus" (113) together appear in ~8% of headlines, and "vaccine" (78) and "pandemic" (59) add to this. Despite being nearly 3 years into the pandemic by September 2022, it was still a dominant news topic — driven by the Omicron booster rollout visible in the very first headline in the dataset.
+
+**Finding 3 — Jan 6 and the Capitol still in the news in 2022**
+"jan" (69) and "capitol" (60) appear frequently and together point specifically to ongoing Jan 6 coverage — investigations, hearings, and prosecutions were active throughout 2022. "court" (78) and "republicans" (60) reinforce this theme of political-legal proceedings still dominating the national conversation.
+
+---
+
+## Step 11: Reflection on Challenges and Learnings
+
+### Challenges
+
+**1. Deprecated Docker image**
+The course-referenced `sequenceiq/hadoop-docker:2.7.0` image is no longer usable with modern Docker. This is a common real-world problem — older images built with Docker manifest v1 break silently on newer Docker Desktop versions. The fix was to switch to the official `apache/hadoop:3` image.
+
+**2. Blank Hadoop config in official image**
+The `apache/hadoop:3` image ships with empty config files — it is designed to be configured by the user. Setting up `core-site.xml`, `hdfs-site.xml`, `mapred-site.xml`, and `yarn-site.xml` manually gave a much deeper understanding of how Hadoop's components fit together than a pre-configured image would have.
+
+**3. No SSH in container**
+Standard Hadoop startup scripts use SSH to start daemons across nodes. In a minimal container, SSH is not installed. Starting daemons directly with `hdfs --daemon start` and `yarn --daemon start` is the workaround — and actually more transparent about what services are running.
+
+**4. YARN resource allocation**
+Without explicit memory and vcore configuration, the NodeManager registers with zero resources and the scheduler cannot assign any containers — jobs sit in ACCEPTED state forever. This was non-obvious to debug and required reading YARN scheduler internals.
+
+**5. NLTK data path in YARN tasks**
+Python libraries that rely on data files (like NLTK's stopword corpus) need those files in system-wide paths when running inside YARN containers. The hadoop user's home directory is not visible to YARN task environments. This is a general lesson: any ML/NLP dependency with external data files needs careful path management in distributed environments.
+
+### Learnings
+
+- Hadoop is not just one service — it is HDFS (storage) + YARN (resource management) + MapReduce (computation), each needing its own configuration.
+- mrjob abstracts the Hadoop Streaming API, allowing Python MapReduce jobs without writing Java, but it still requires a fully functioning YARN cluster underneath.
+- The 2-step MapReduce pattern (count → global sort) is a standard pattern for "top-N" problems: you cannot sort globally in step 1 because each reducer only sees a subset of keys.
+- Local testing with mrjob before submitting to Hadoop saves significant debugging time.
+- Distributed systems surface environment issues (paths, user contexts, resource limits) that never appear in local testing.
+
+---
+
+## Files in This Project
+
+| File | Description |
+|------|-------------|
+| `News_Category_Dataset_v3.json` | Original full dataset downloaded from Kaggle |
+| `news_headlines.txt` | Trimmed dataset — first 5000 lines of the original |
+| `word_frequency.py` | 2-step MapReduce job to find top 50 words in headlines |
+| `README.md` | This file — project log and documentation |
+
+---
+
+## Notes
+
+- The dataset uses **NDJSON** (Newline Delimited JSON) format — one JSON object per line.
+- `head -n` counts lines, so 5000 lines = 5000 records in this format.
