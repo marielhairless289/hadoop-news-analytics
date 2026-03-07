@@ -1,0 +1,7 @@
+# Excluded from repo
+1a1b.ipynb
+News_Category_Dataset_v3.json
+venv/
+__pycache__/
+*.pyc
+.DS_Store
