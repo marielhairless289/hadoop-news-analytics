@@ -193,3 +193,94 @@ docker run -d --name hadoop-hw2 \
 This made the local file available inside the container at `/data/news_headlines.txt`, from where it was pushed into HDFS.
 
 ---
+
+## Step 7: Write MapReduce Job — word_frequency.py
+
+**File:** `word_frequency.py`
+**Framework:** `mrjob` (Python MapReduce library that can run locally or on Hadoop)
+
+**Dependencies installed:**
+```bash
+pip install mrjob nltk
+python -c "import nltk; nltk.download('stopwords')"
+```
+
+**What the job does (2-step MapReduce):**
+
+- **Step 1 — Mapper:** Parses each JSON line, extracts the `headline` field, lowercases it, strips punctuation, filters out NLTK English stopwords and words shorter than 3 characters, emits `(word, 1)` for each valid word.
+- **Step 1 — Reducer:** Sums all counts per word → `(word, total_count)`
+- **Step 2 — Mapper:** Re-emits everything as `(None, (count, word))` to funnel all data to a single reducer for global sorting
+- **Step 2 — Reducer:** Sorts all `(count, word)` pairs descending, takes top 50, emits `(word, count)`
+
+---
+
+## Step 8: Test Locally
+
+Before running on Hadoop, the job was tested locally using mrjob's built-in local runner.
+
+**Command:**
+```bash
+python word_frequency.py news_headlines.txt
+```
+
+**Result — Top 50 words from 5000 headlines:**
+```
+"trump"         532
+"covid"         290
+"biden"         268
+"says"          248
+"new"           225
+"trumps"        153
+"gop"           152
+"house"         122
+"donald"        114
+"coronavirus"   113
+"joe"           110
+"first"         100
+"police"         97
+"tweets"         91
+"white"          90
+"week"           85
+"election"       85
+"news"           81
+"ukraine"        80
+"vaccine"        78
+"twitter"        78
+"court"          78
+"people"         76
+"black"          76
+"calls"          75
+"fox"            74
+"texas"          73
+"man"            72
+"get"            71
+"dead"           71
+"jan"            69
+"years"          66
+"funniest"       65
+"day"            65
+"death"          64
+"best"           64
+"russian"        62
+"say"            61
+"reveals"        61
+"report"         61
+"dies"           61
+"video"          60
+"republicans"    60
+"million"        60
+"capitol"        60
+"bill"           60
+"school"         59
+"pandemic"       59
+"make"           59
+"gets"           59
+```
+
+**Observations:**
+- "trump" (532) is the most frequent word by a large margin — consistent with HuffPost's political coverage in 2022.
+- "covid" (290), "biden" (268), "ukraine" (80), "vaccine" (78) reflect the dominant news themes of the period.
+- Stopword filtering is working correctly — common words like "the", "and", "is" are absent.
+- Local test passed with no errors. Ready to run on Hadoop.
+
+---
