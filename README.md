@@ -284,3 +284,74 @@ python word_frequency.py news_headlines.txt
 - Local test passed with no errors. Ready to run on Hadoop.
 
 ---
+
+## Step 9: Run on Hadoop Cluster (inside Docker)
+
+### Issues encountered and fixed
+
+**Issue 1 — YARN not running**
+mrjob's `hadoop` runner requires YARN (ResourceManager + NodeManager). Only HDFS was running. Fixed by writing `mapred-site.xml` and `yarn-site.xml` and starting YARN daemons:
+```bash
+yarn --daemon start resourcemanager
+yarn --daemon start nodemanager
+```
+
+**Issue 2 — MRAppMaster not found**
+```
+Error: Could not find or load main class org.apache.hadoop.mapreduce.v2.app.MRAppMaster
+```
+Root cause: `HADOOP_MAPRED_HOME` was not set in the task environment. Fixed by adding to `mapred-site.xml`:
+```xml
+<property><name>yarn.app.mapreduce.am.env</name><value>HADOOP_MAPRED_HOME=/opt/hadoop</value></property>
+<property><name>mapreduce.map.env</name><value>HADOOP_MAPRED_HOME=/opt/hadoop</value></property>
+<property><name>mapreduce.reduce.env</name><value>HADOOP_MAPRED_HOME=/opt/hadoop</value></property>
+```
+
+**Issue 3 — NLTK stopwords not found on YARN worker**
+```
+LookupError: Resource stopwords not found.
+Searched in: '/home/nltk_data', '/usr/nltk_data', '/usr/share/nltk_data' ...
+```
+Root cause: NLTK data was downloaded to `/opt/hadoop/nltk_data` (hadoop user home), but YARN task containers look for it in system paths. Fixed by downloading to a system-wide location:
+```bash
+python3 -c "import nltk; nltk.download('stopwords', download_dir='/usr/local/share/nltk_data')"
+```
+
+**Issue 4 — YARN job stuck in ACCEPTED state**
+Root cause: NodeManager had no memory/vcores configured, so the scheduler couldn't allocate containers. Fixed by adding to `yarn-site.xml`:
+```xml
+<property><name>yarn.nodemanager.resource.memory-mb</name><value>4096</value></property>
+<property><name>yarn.nodemanager.resource.cpu-vcores</name><value>4</value></property>
+<property><name>yarn.nodemanager.vmem-check-enabled</name><value>false</value></property>
+```
+
+### Final command
+```bash
+python3 /tmp/word_frequency.py \
+  -r hadoop \
+  --hadoop-bin /opt/hadoop/bin/hadoop \
+  hdfs:///user/hadoop/input/news_headlines.txt
+```
+
+### Result — Both MapReduce steps completed successfully
+
+**Step 1** (word count): 5000 input records → 39,844 map output records → 10,421 unique words
+**Step 2** (top-50 sort): 10,421 input records → 50 output records
+
+**MapReduce counters (Step 1):**
+- Map input records: 5,000
+- Map output records: 39,844
+- Reduce input groups (unique words): 10,421
+- HDFS bytes read: 2,089,834
+
+**Output matches local run exactly:**
+```
+"trump"     532       "white"  90    "fox"    74
+"covid"     290       "week"   85    "texas"  73
+"biden"     268       "election" 85  "man"    72
+"says"      248       "news"   81    ...
+```
+
+Results confirmed correct — Hadoop cluster output is identical to local test output.
+
+---
